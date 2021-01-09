@@ -1,5 +1,7 @@
-const router = require("express").Router();
-const Workout = require("../models/workouts.js");
+const express = require("express");
+const router = express.Router();
+const mongojs = require("mongojs");
+const Workout = require("../models/workouts")
 
 router.post("/api/workouts", ({ body }, res) => {
   Workout.create(body)
@@ -11,58 +13,30 @@ router.post("/api/workouts", ({ body }, res) => {
     });
 });
 
-// router.put("/api/workouts/:id", (req, res) => {
-//   if (req.body.type === "cardio") {
-//     Workout.findOneAndUpdate(
-//       {
-//         _id: req.params.id,
-//       },
-//       {
-//         $push: {
-//           exercises: {
-//             type: req.body.type,
-//             name: req.body.name,
-//             duration: req.body.duration,
-//             distance: req.body.distance,
-//           },
-//         },
-//       }
-//     )
-//       .then((dbWorkout) => {
-//         res.json(dbWorkout);
-//       })
-//       .catch((err) => {
-//         res.status(400).json(err);
-//       });
-//   } else {
-//     Workout.findOneAndUpdate(
-//       {
-//         _id: req.params.id,
-//       },
-//       {
-//         $push: {
-//           exercises: {
-//             type: req.body.type,
-//             name: req.body.name,
-//             weight: req.body.weight,
-//             duration: req.body.duration,
-//             reps: req.body.reps,
-//             sets: req.body.sets,
-//           },
-//         },
-//       }
-//     )
-//       .then((dbWorkout) => {
-//         res.json(dbWorkout);
-//       })
-//       .catch((err) => {
-//         res.status(400).json(err);
-//       });
-//   }
-// });
+router.put("/api/workouts/:id", (req, res) => {
+  console.log(req.body);
+  Workout.updateOne(
+    {
+      _id: mongojs.ObjectID(req.params.id),
+    },
+    {
+      $push: {
+        exercises: req.body
+        }
+      },
+  ).then((data) => {
+      res.json(data);
+    })
+    .catch((err) => {      res.status(400).json(err);
+      console.error(err)
+    });
+});
 
+// get the last workout
 router.get("/api/workouts/", (req, res) => {
-  Workout.findOne({}).sort({$natural:-1}).limit(1)
+  Workout.findOne({})
+    .sort({ $natural: -1 })
+    .limit(1)
     .then((dbWorkout) => {
       res.json(dbWorkout);
     })
@@ -73,17 +47,13 @@ router.get("/api/workouts/", (req, res) => {
 
 module.exports = router;
 
-// app.get("/find/:id", (req, res) => {
-//     db.notes.findOne(
-//       {
-//         _id: mongojs.ObjectId(req.params.id)
-//       },
-//       (error, data) => {
-//         if (error) {
-//           res.send(error);
-//         } else {
-//           res.send(data);
-//         }
-//       }
-//     );
-//   });
+router.get("/api/workouts/range/", (req, res) => {
+    Workout.find({},
+      (error, data) => {        if (error) {
+          res.send(error);
+        } else {
+          res.send(data);
+        }
+      }
+    );
+  });
