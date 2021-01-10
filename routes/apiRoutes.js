@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const mongojs = require("mongojs");
-const Workout = require("../models/workouts")
+const Workout = require("../models/workouts");
+const path = require("path");
 
 router.post("/api/workouts", ({ body }, res) => {
   Workout.create(body)
@@ -21,14 +22,16 @@ router.put("/api/workouts/:id", (req, res) => {
     },
     {
       $push: {
-        exercises: req.body
-        }
+        exercises: req.body,
       },
-  ).then((data) => {
+    }
+  )
+    .then((data) => {
       res.json(data);
     })
-    .catch((err) => {      res.status(400).json(err);
-      console.error(err)
+    .catch((err) => {
+      res.status(400).json(err);
+      console.error(err);
     });
 });
 
@@ -45,15 +48,18 @@ router.get("/api/workouts/", (req, res) => {
     });
 });
 
-module.exports = router;
+//  for dashboard
+router.get("/api/workouts/range", (req, res) => {
+  Workout.find({})
+  .sort({day: 1})
+  // .populate("exercises")
+		.then((dbWorkout) => {
+			res.json(dbWorkout);
+		})
+		.catch((err) => {
+      res.json(err);
+      console.error(err);
+		});
+});
 
-router.get("/api/workouts/range/", (req, res) => {
-    Workout.find({},
-      (error, data) => {        if (error) {
-          res.send(error);
-        } else {
-          res.send(data);
-        }
-      }
-    );
-  });
+module.exports = router;
