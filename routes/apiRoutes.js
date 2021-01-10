@@ -37,9 +37,9 @@ router.put("/api/workouts/:id", (req, res) => {
 
 // get the last workout
 router.get("/api/workouts/", (req, res) => {
-  Workout.findOne({})
-    .sort({ $natural: -1 })
-    .limit(1)
+  Workout.find({}, null, {sort: {day:1}})
+    // .sort({ day: -1 })
+    .populate("exercises")
     .then((dbWorkout) => {
       res.json(dbWorkout);
     })
